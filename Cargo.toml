@@ -1,0 +1,16 @@
+[package]
+name = "web-abnahme"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe = { version = "=0.22.0", default-features = false, features = ["glow", "default_fonts"] }
+winit = "=0.28.7"
+serde = { version = "=1.0.171", features = ["derive"] }
+serde_json = "=1.0.104"
+png = "=0.17.8"
+
+# Pins so the whole tree builds with the installed Rust 1.68
+[dependencies.pins]
+package = "web-abnahme-pins"
+path = "pins"

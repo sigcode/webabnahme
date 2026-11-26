@@ -1,0 +1,5 @@
+/target/
+/pins/target/
+/shots/
+/packaging/AppIcon.iconset/
+.DS_Store
