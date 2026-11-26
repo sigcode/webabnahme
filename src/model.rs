@@ -316,6 +316,9 @@ pub struct Settings {
     pub model: String,
     pub max_turns: u32,
     pub extra_instructions: String,
+    /// Folder of the app's own git repository (empty = find automatically).
+    #[serde(default)]
+    pub repo_path: String,
 }
 
 impl Default for Settings {
@@ -325,6 +328,7 @@ impl Default for Settings {
             model: "sonnet".into(),
             max_turns: 200,
             extra_instructions: String::new(),
+            repo_path: String::new(),
         }
     }
 }

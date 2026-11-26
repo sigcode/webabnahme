@@ -31,6 +31,7 @@ pub enum Action {
     Open(String),
     OpenEvidence(String),
     Reextract(String, Option<Vec<String>>),
+    Git(&'static str, String),
     FixBrief,
     Reveal(String),
     NewProject,
@@ -57,6 +58,8 @@ pub struct App {
     pub(crate) frame_no: u32,
     pub(crate) screenshot: Option<PathBuf>,
     pub(crate) shot_done: bool,
+    pub(crate) repo: crate::repo::Watcher,
+    pub(crate) commit_msg: String,
 }
 
 fn hash_of(p: &[Project]) -> u64 {
@@ -106,6 +109,8 @@ impl App {
             None => Tab::Checklist,
         };
         let saved_hash = hash_of(&projects);
+        let settings = store::load_settings();
+        let repo = crate::repo::Watcher::start(path_env.clone(), settings.repo_path.clone());
         let mut log = Vec::new();
         if screenshot.is_some() && start_tab == Some(3) {
             // sample lines so a check picture shows how the protocol wraps
@@ -119,12 +124,12 @@ impl App {
             projects,
             sel: 0,
             tab,
-            settings: store::load_settings(),
+            settings,
             path_env,
             job: None,
             log,
             message: None,
-            show_settings: false,
+            show_settings: start_tab == Some(0),
             confirm_delete: false,
             confirm_replace: false,
             filter: Filter::All,
@@ -134,6 +139,8 @@ impl App {
             frame_no: 0,
             screenshot,
             shot_done: false,
+            repo,
+            commit_msg: String::new(),
         }
     }
 
@@ -214,6 +221,9 @@ impl App {
                 }
                 Ev::Done { ok, summary, cost } => {
                     finished = true;
+                    if kind == JobKind::Git {
+                        self.repo.poke();
+                    }
                     if cost > 0.0 {
                         self.log.push((LogKind::Info, format!("Kosten laut Claude Code: {:.2} US$", cost)));
                     }
@@ -366,6 +376,18 @@ impl App {
                     store::open_path(&f);
                 }
                 Action::Reveal(p) => store::reveal(&p),
+                Action::Git(script, msg) => {
+                    if self.busy() {
+                        continue;
+                    }
+                    let Some(st) = self.repo.get() else { continue };
+                    let pe = self.path_env();
+                    let pid = self.projects[self.sel].id.clone();
+                    let dir = st.path.to_string_lossy().to_string();
+                    self.log.clear();
+                    self.job = Some(claude::start_simple(JobKind::Git, "/bin/zsh", &["-c", script, "zsh", &dir, &msg], &pe, &pid));
+                    self.message = None;
+                }
                 Action::FixBrief => {
                     if self.busy() {
                         continue;

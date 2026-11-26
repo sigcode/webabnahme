@@ -14,7 +14,9 @@ cargo build --release
 
 echo "→ Packe $APP …"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp -f target/release/web-abnahme "$APP/Contents/MacOS/web-abnahme"
+# copy then rename, so a running copy of the app keeps working while it is replaced
+cp -f target/release/web-abnahme "$APP/Contents/MacOS/web-abnahme.new"
+mv -f "$APP/Contents/MacOS/web-abnahme.new" "$APP/Contents/MacOS/web-abnahme"
 cp -f packaging/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" packaging/Info.plist > "$APP/Contents/Info.plist"
 printf 'APPL????' > "$APP/Contents/PkgInfo"

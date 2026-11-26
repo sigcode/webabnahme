@@ -18,6 +18,7 @@ pub enum JobKind {
     Check,
     Extract,
     Brief,
+    Git,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]

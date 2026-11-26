@@ -236,6 +236,9 @@ impl App {
                         ui.painter().circle_filled(r.center(), 4.0, c);
                         ui.label(RichText::new(t).color(c).size(11.5));
                     });
+                    if self.repo_hint(ui) {
+                        self.show_settings = true;
+                    }
                 });
             });
     }
@@ -356,6 +359,7 @@ impl App {
                         actions.push(Action::Open(store::data_dir().to_string_lossy().to_string()));
                     }
                 });
+                self.repo_section(ui, actions);
             });
         if save || !open {
             store::save_settings(&self.settings);
